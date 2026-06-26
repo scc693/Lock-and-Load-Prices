@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0d0f1a" />
+<title>Boris' Elixirs — POS</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<style>
+  :root{
+    --bg:#0d0f1a; --panel:#161a2b; --panel2:#1f2540; --line:#2c335a;
+    --ink:#eef1ff; --muted:#9aa3c7; --accent:#ff5470; --accent2:#48d6a0;
+    --gold:#f5c542; --danger:#ff5470;
+    --tap:54px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  body{padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left)}
+  header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,#11142400,#0d0f1a 70%),var(--panel);
+    border-bottom:1px solid var(--line);padding:12px 14px 10px}
+  h1{font-size:17px;margin:0;letter-spacing:.2px}
+  h1 small{display:block;color:var(--muted);font-weight:400;font-size:11px;margin-top:2px}
+  .wrap{padding:10px 12px 280px;max-width:560px;margin:0 auto}
+  .section-title{display:flex;align-items:center;gap:8px;margin:18px 4px 8px;font-size:13px;
+    text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+  .section-title b{color:var(--gold);font-weight:700}
+
+  .item{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .item .info{flex:1;min-width:0}
+  .item .name{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .meta{color:var(--muted);font-size:11px;margin-top:2px}
+  .price-tag{font-variant-numeric:tabular-nums;font-size:13px;color:var(--accent2);font-weight:600}
+  .price-tag .strike{color:var(--muted);text-decoration:line-through;font-weight:400;margin-right:5px}
+  .qty{display:flex;align-items:center;gap:6px}
+  .qty button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);
+    background:var(--panel2);color:var(--ink);font-size:20px;font-weight:700;line-height:1;cursor:pointer}
+  .qty button:active{background:var(--accent);border-color:var(--accent)}
+  .qty .n{min-width:26px;text-align:center;font-variant-numeric:tabular-nums;font-weight:700;font-size:16px}
+  .item.active{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2) inset}
+
+  /* footer / cart */
+  .cart{position:fixed;left:0;right:0;bottom:0;z-index:8;
+    background:var(--panel);border-top:1px solid var(--line);
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px #0008}
+  .cart .row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:2px 2px}
+  .cart .row.muted{color:var(--muted)}
+  .cart .row.total{font-size:20px;font-weight:800;border-top:1px dashed var(--line);margin-top:6px;padding-top:8px}
+  .cart .row.btc{color:var(--gold);font-weight:700;font-size:15px}
+  .num{font-variant-numeric:tabular-nums}
+  .controls{display:flex;gap:8px;margin:8px 0 6px;flex-wrap:wrap}
+  .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:1;min-width:0}
+  .seg button{flex:1;border:0;background:var(--panel2);color:var(--muted);
+    padding:9px 4px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .seg button.on{background:var(--accent);color:#fff}
+  .seg.alt button.on{background:var(--accent2);color:#06281c}
+  .label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:0 2px 3px}
+  .ctl{flex:1;min-width:120px}
+  .topbtns{display:flex;gap:8px}
+  .topbtns button{flex:1;height:40px;border-radius:10px;border:1px solid var(--line);
+    background:var(--panel2);color:var(--ink);font-weight:600;font-size:13px;cursor:pointer}
+  .topbtns button.clear:active{background:var(--danger);border-color:var(--danger)}
+  .topbtns button.expand:active{background:var(--accent2);border-color:var(--accent2);color:#06281c}
+  #breakdown{display:none;border-top:1px dashed var(--line);margin-top:6px;padding-top:6px}
+  #breakdown.show{display:block}
+  .rate-line{font-size:11px;color:var(--muted);margin-top:4px;display:flex;justify-content:space-between;align-items:center}
+  .rate-line a{color:var(--accent2);text-decoration:none}
+  input.spread{width:58px;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:5px 6px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+  .pill{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:999px;
+    padding:2px 8px;font-size:10px;color:var(--muted)}
+  .search{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:10px;padding:10px 12px;font-size:14px;margin-top:8px}
+  .empty{color:var(--muted);text-align:center;padding:24px;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>💉 Boris' Questionably Legal Elixirs <small>Mobile POS &amp; Bitcoin Calculator</small></h1>
+  <input id="search" class="search" placeholder="Search the menu…" />
+</header>
+
+<div class="wrap" id="catalog"></div>
+
+<div class="cart">
+  <div class="controls">
+    <div class="ctl">
+      <div class="label">Pricing tier</div>
+      <div class="seg alt" id="tierSeg">
+        <button data-tier="regular" class="on">Regular</button>
+        <button data-tier="bulk">Bulk</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <div class="label">Processing fee</div>
+      <div class="seg" id="feeSeg">
+        <button data-fee="5" class="on">$5</button>
+        <button data-fee="10">$10</button>
+        <button data-fee="cashapp">CashApp est.</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row muted"><span>Items (<span id="count">0</span>) + 20% markup</span><span class="num" id="sub">$0.00</span></div>
+  <div class="row total"><span>Total USD</span><span class="num" id="total">$0.00</span></div>
+  <div class="row btc"><span>≈ Bitcoin</span><span class="num" id="btc">— BTC</span></div>
+
+  <div id="breakdown">
+    <div class="row muted"><span>Subtotal (base prices)</span><span class="num" id="bd_base">$0.00</span></div>
+    <div class="row muted"><span>+ 20% markup</span><span class="num" id="bd_markup">$0.00</span></div>
+    <div class="row muted"><span>+ Flat shipping</span><span class="num" id="bd_ship">$15.00</span></div>
+    <div class="row muted"><span>+ Processing fee</span><span class="num" id="bd_fee">$5.00</span></div>
+    <div class="rate-line">
+      <span>BTC rate <span class="pill" id="rateSrc">loading…</span></span>
+      <span class="num" id="rateVal">—</span>
+    </div>
+    <div class="rate-line">
+      <span>CashApp spread %</span>
+      <span><input class="spread" id="spread" type="number" step="0.1" value="1.75" inputmode="decimal" /> %</span>
+    </div>
+    <div class="rate-line"><span>Effective buy rate (spot + spread)</span><span class="num" id="effRate">—</span></div>
+    <div class="rate-line"><span><a href="#" id="refresh">↻ Refresh rates</a></span><span id="netFee" class="num"></span></div>
+  </div>
+
+  <div class="topbtns" style="margin-top:8px">
+    <button class="expand" id="toggleBd">Show breakdown ▾</button>
+    <button class="clear" id="clear">Clear</button>
+  </div>
+</div>
+
+<script>
+/* ---------- Catalog (parsed from Boris' price sheet) ---------- */
+const CATALOG = [
+  { title:"Battle Brews", icon:"💉", items:[
+    ["Mega Mushroom","100mg/ml","10ml Vial",30,25],
+    ["Vitality Vial","250mg/ml","10ml Vial",40,35],
+    ["Elixir of Oof Prevention","250mg/ml","10ml Vial",40,35],
+    ["Crimson Flask","200mg/ml","10ml Vial",40,35],
+    ["Phoenix Pop","250mg/ml","10ml Vial",40,35],
+    ["Life Shard","300mg/ml","10ml Vial",45,40],
+    ["Max HP Tonic","100mg/ml","10ml Vial",40,35],
+    ["Fairy Juice","250mg/ml","10ml Vial",45,40],
+    ["Stamina Soup","100mg/ml","10ml Vial",45,40],
+    ["Ruby Gourd","200mg/ml","10ml Vial",55,50],
+    ["Healing Ham","100mg/ml","10ml Vial",55,50],
+    ["HP Pickle","200mg/ml","10ml Vial",65,60],
+    ["Revive Ravioli","150mg/ml","10ml Vial",100,95],
+    ["Potion of Bad Decisions","50mg/ml","10ml Vial",85,80],
+  ]},
+  { title:"Snacks & Potions", icon:"🍖", items:[
+    ["Goblin Gatorade","20mg","50 Tabs",35,30],
+    ["Mana-Free Medkit","50mg","50 Tabs",65,60],
+    ["Extra Life Snack","25mg","50 Tabs",55,50],
+    ["Boss Buster Broth","5mg","50 Tabs",30,25],
+    ["Checkpoint Chow","1mg","50 Tabs",55,50],
+    ["Red Slime Smoothie","12.5mg","50 Tabs",40,35],
+    ["Hero's Lunchbox","20mg","20 Tabs",30,25],
+    ["Golden Apple Juice","50mg","50 Tabs",40,35],
+    ["Knight Nuggets","25mg","50 Tabs",40,35],
+    ["Emergency Cheese","10mg","50 Tabs",100,95],
+    ["Medic Melon","20mg","50 Tabs",35,30],
+    ["Dungeon Donut","25mg","50 Tabs",45,40],
+    ["Critical Cocoa","10mg","50 Tabs",35,30],
+    ["Victory Veggie","10mg","50 Tabs",35,30],
+    ["Heart Container","25mg","20 Tabs",30,25],
+    ["Mega Mushroom (Tabs)","25mg","50 Tabs",45,40],
+    ["Vitality Vial (Tabs)","5mg","50 Tabs",30,25],
+  ]},
+  { title:"Mystic Reagents", icon:"✨", items:[
+    ["Crimson Flask (Reagent)","N/A","20ml",25,20],
+    ["Phoenix Pop (Reagent)","5,000iu","Each",35,30],
+    // 6th value = bulk minimum order qty. Life Shard bulk is $175/unit, min 10 ($1,750 lot).
+    ["Life Shard (Kit)","100iu/kit","10 x 10iu Vials",200,175,10],
+  ]},
+];
+
+const MARKUP = 0.20;
+const SHIPPING = 15;
+
+/* ---------- State ---------- */
+let tier = "regular";            // regular | bulk
+let feeMode = "5";               // 5 | 10 | cashapp
+let cart = {};                   // id -> qty
+let spotRate = null;             // USD per BTC (spot)
+let rateSource = "—";
+let networkFeeUsd = null;        // estimated on-chain fee for CashApp est. option
+
+const $ = id => document.getElementById(id);
+const money = n => "$" + n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+
+/* ---------- Build catalog UI ---------- */
+function priceFor(it){ return tier==="bulk" ? it[4] : it[3]; }
+function markedPrice(base){ return base * (1+MARKUP); }
+function moqFor(it){ return tier==="bulk" ? (it[5]||1) : 1; } // min order qty for current tier
+
+const flat = [];
+CATALOG.forEach((sec,si)=>{
+  sec.items.forEach((it,ii)=> flat.push({id:`${si}-${ii}`, sec:sec.title, name:it[0], dose:it[1], qty:it[2], reg:it[3], bulk:it[4]}));
+});
+
+function render(filter=""){
+  const f = filter.trim().toLowerCase();
+  const cat = $("catalog");
+  cat.innerHTML = "";
+  let shown = 0;
+  CATALOG.forEach((sec,si)=>{
+    const matches = sec.items
+      .map((it,ii)=>({it,ii}))
+      .filter(({it})=> !f || it[0].toLowerCase().includes(f));
+    if(!matches.length) return;
+    const h = document.createElement("div");
+    h.className="section-title";
+    h.innerHTML = `<span>${sec.icon}</span> <b>${sec.title}</b>`;
+    cat.appendChild(h);
+    matches.forEach(({it,ii})=>{
+      shown++;
+      const id = `${si}-${ii}`;
+      const base = tier==="bulk"?it[4]:it[3];
+      const final = markedPrice(base);
+      const moq = tier==="bulk" ? (it[5]||1) : 1;
+      const moqBadge = moq>1 ? ` · <span class="pill">min ${moq}</span>` : "";
+      const q = cart[id]||0;
+      const row = document.createElement("div");
+      row.className = "item" + (q>0?" active":"");
+      row.innerHTML = `
+        <div class="info">
+          <div class="name">${it[0]}</div>
+          <div class="meta">${it[1]} · ${it[2]} · <span class="price-tag"><span class="strike">${money(base)}</span>${money(final)}</span>${moqBadge}</div>
+        </div>
+        <div class="qty">
+          <button data-act="dec" data-id="${id}">–</button>
+          <span class="n">${q}</span>
+          <button data-act="inc" data-id="${id}">+</button>
+        </div>`;
+      cat.appendChild(row);
+    });
+  });
+  if(!shown) cat.innerHTML = `<div class="empty">No menu items match "${filter}".</div>`;
+}
+
+/* ---------- Totals ---------- */
+function feeAmount(){
+  if(feeMode==="5") return 5;
+  if(feeMode==="10") return 10;
+  return networkFeeUsd!=null ? networkFeeUsd : 0; // cashapp est
+}
+function effectiveRate(){
+  if(spotRate==null) return null;
+  const spread = parseFloat($("spread").value)||0;
+  return spotRate * (1 + spread/100);
+}
+function recalc(){
+  let base=0, count=0;
+  for(const id in cart){
+    const q=cart[id]; if(!q) continue;
+    const [si,ii]=id.split("-").map(Number);
+    const it=CATALOG[si].items[ii];
+    base += (tier==="bulk"?it[4]:it[3]) * q;
+    count += q;
+  }
+  const markup = base*MARKUP;
+  const fee = feeAmount();
+  const itemsWithMarkup = base+markup;
+  const total = count>0 ? itemsWithMarkup + SHIPPING + fee : 0;
+
+  $("count").textContent = count;
+  $("sub").textContent = money(itemsWithMarkup);
+  $("total").textContent = money(total);
+
+  $("bd_base").textContent = money(base);
+  $("bd_markup").textContent = money(markup);
+  $("bd_ship").textContent = money(count>0?SHIPPING:0);
+  $("bd_fee").textContent = (feeMode==="cashapp" && networkFeeUsd==null) ? "est…" : money(count>0?fee:0);
+
+  const eff = effectiveRate();
+  if(eff && total>0){
+    const btc = total/eff;
+    $("btc").textContent = btc.toFixed(8).replace(/0+$/,"").replace(/\.$/,"") + " BTC";
+  } else {
+    $("btc").textContent = spotRate==null ? "rate loading…" : "— BTC";
+  }
+  $("rateVal").textContent = spotRate==null ? "—" : money(spotRate);
+  $("effRate").textContent = eff==null ? "—" : money(eff);
+  $("rateSrc").textContent = rateSource;
+  $("netFee").textContent = networkFeeUsd!=null ? ("net ~"+money(networkFeeUsd)) : "";
+}
+
+/* ---------- Live rates (runs on the DM's phone, direct to APIs) ---------- */
+async function fetchSpot(){
+  // CashApp buys/sells BTC at spot + a spread, so we pull spot then apply the spread slider.
+  try{
+    const r = await fetch("https://api.coinbase.com/v2/prices/BTC-USD/spot",{cache:"no-store"});
+    const j = await r.json();
+    spotRate = parseFloat(j.data.amount);
+    rateSource = "Coinbase spot";
+  }catch(e){
+    try{
+      const r2 = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd",{cache:"no-store"});
+      const j2 = await r2.json();
+      spotRate = j2.bitcoin.usd; rateSource="CoinGecko spot";
+    }catch(e2){ rateSource="offline — enter manually"; }
+  }
+  recalc();
+}
+async function fetchNetworkFee(){
+  // Estimate on-chain (gas) cost CashApp passes through on a BTC withdrawal.
+  try{
+    const r = await fetch("https://mempool.space/api/v1/fees/recommended",{cache:"no-store"});
+    const j = await r.json();
+    const satPerVb = j.halfHourFee || j.hourFee || j.fastestFee;
+    const vbytes = 140;                       // typical 1-in / 2-out segwit tx
+    const sats = satPerVb * vbytes;
+    if(spotRate) networkFeeUsd = +( (sats/1e8) * spotRate ).toFixed(2);
+  }catch(e){ /* leave null; user can pick $5/$10 */ }
+  recalc();
+}
+async function refreshAll(){
+  rateSource="loading…"; recalc();
+  await fetchSpot();
+  await fetchNetworkFee();
+}
+
+/* ---------- Events ---------- */
+$("catalog").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-act]"); if(!b) return;
+  const id=b.dataset.id;
+  const [si,ii]=id.split("-").map(Number);
+  const moq=moqFor(CATALOG[si].items[ii]);
+  let q=cart[id]||0;
+  if(b.dataset.act==="inc"){ q = q===0 ? moq : q+1; }          // first add jumps to the minimum
+  else { q = q-1; if(q>0 && q<moq) q=0; if(q<0) q=0; }          // can't sit below the minimum in bulk
+  if(q) cart[id]=q; else delete cart[id];
+  render($("search").value);
+  recalc();
+});
+$("tierSeg").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  tier=b.dataset.tier;
+  [...$("tierSeg").children].forEach(x=>x.classList.toggle("on",x===b));
+  if(tier==="bulk"){                                            // bump any sub-minimum lines up to the bulk MOQ
+    for(const id in cart){
+      const [si,ii]=id.split("-").map(Number);
+      const m=CATALOG[si].items[ii][5]||1;
+      if(cart[id]>0 && cart[id]<m) cart[id]=m;
+    }
+  }
+  render($("search").value); recalc();
+});
+$("feeSeg").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  feeMode=b.dataset.fee;
+  [...$("feeSeg").children].forEach(x=>x.classList.toggle("on",x===b));
+  if(feeMode==="cashapp" && networkFeeUsd==null) fetchNetworkFee();
+  recalc();
+});
+$("search").addEventListener("input",e=>render(e.target.value));
+$("spread").addEventListener("input",recalc);
+$("clear").addEventListener("click",()=>{ cart={}; render($("search").value); recalc(); });
+$("toggleBd").addEventListener("click",()=>{
+  const el=$("breakdown"); el.classList.toggle("show");
+  $("toggleBd").textContent = el.classList.contains("show")?"Hide breakdown ▴":"Show breakdown ▾";
+});
+$("refresh").addEventListener("click",e=>{e.preventDefault();refreshAll();});
+
+/* ---------- Init ---------- */
+render();
+recalc();
+refreshAll();
+</script>
+</body>
+</html>
