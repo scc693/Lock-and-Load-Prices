@@ -12,7 +12,7 @@ On a phone, "Add to Home Screen" to run it full-screen like an app (PWA manifest
 ## What it does
 
 - **Full menu** parsed from Boris' price sheet (Battle Brews, Snacks & Potions, Mystic Reagents) — tap `+`/`–` to ring up items.
-- **Regular vs Bulk** pricing toggle.
+- **Regular vs Bulk** pricing toggle, with **per-item minimum order quantities** in bulk mode (e.g. Life Shard Kit bulk is $175/unit with a `min 10` — the first tap jumps to 10, and you can't sit below the minimum). Set via an optional 6th value on a catalog row.
 - **20% markup** applied to every item (base price shown struck-through next to the marked-up price).
 - **$15 flat-rate shipping** added once per order.
 - **Processing fee** selector: **$5**, **$10**, or **CashApp est.** — the last estimates the on-chain (gas) cost CashApp passes through on a BTC withdrawal, from live mempool fees.

@@ -170,7 +170,8 @@ const CATALOG = [
   { title:"Mystic Reagents", icon:"✨", items:[
     ["Crimson Flask (Reagent)","N/A","20ml",25,20],
     ["Phoenix Pop (Reagent)","5,000iu","Each",35,30],
-    ["Life Shard (Kit)","100iu/kit","10 x 10iu Vials",200,1750],
+    // 6th value = bulk minimum order qty. Life Shard bulk is $175/unit, min 10 ($1,750 lot).
+    ["Life Shard (Kit)","100iu/kit","10 x 10iu Vials",200,175,10],
   ]},
 ];
 
@@ -191,6 +192,7 @@ const money = n => "$" + n.toLocaleString("en-US",{minimumFractionDigits:2,maxim
 /* ---------- Build catalog UI ---------- */
 function priceFor(it){ return tier==="bulk" ? it[4] : it[3]; }
 function markedPrice(base){ return base * (1+MARKUP); }
+function moqFor(it){ return tier==="bulk" ? (it[5]||1) : 1; } // min order qty for current tier
 
 const flat = [];
 CATALOG.forEach((sec,si)=>{
@@ -216,13 +218,15 @@ function render(filter=""){
       const id = `${si}-${ii}`;
       const base = tier==="bulk"?it[4]:it[3];
       const final = markedPrice(base);
+      const moq = tier==="bulk" ? (it[5]||1) : 1;
+      const moqBadge = moq>1 ? ` · <span class="pill">min ${moq}</span>` : "";
       const q = cart[id]||0;
       const row = document.createElement("div");
       row.className = "item" + (q>0?" active":"");
       row.innerHTML = `
         <div class="info">
           <div class="name">${it[0]}</div>
-          <div class="meta">${it[1]} · ${it[2]} · <span class="price-tag"><span class="strike">${money(base)}</span>${money(final)}</span></div>
+          <div class="meta">${it[1]} · ${it[2]} · <span class="price-tag"><span class="strike">${money(base)}</span>${money(final)}</span>${moqBadge}</div>
         </div>
         <div class="qty">
           <button data-act="dec" data-id="${id}">–</button>
@@ -321,8 +325,12 @@ async function refreshAll(){
 $("catalog").addEventListener("click",e=>{
   const b=e.target.closest("button[data-act]"); if(!b) return;
   const id=b.dataset.id;
-  cart[id]=Math.max(0,(cart[id]||0)+(b.dataset.act==="inc"?1:-1));
-  if(!cart[id]) delete cart[id];
+  const [si,ii]=id.split("-").map(Number);
+  const moq=moqFor(CATALOG[si].items[ii]);
+  let q=cart[id]||0;
+  if(b.dataset.act==="inc"){ q = q===0 ? moq : q+1; }          // first add jumps to the minimum
+  else { q = q-1; if(q>0 && q<moq) q=0; if(q<0) q=0; }          // can't sit below the minimum in bulk
+  if(q) cart[id]=q; else delete cart[id];
   render($("search").value);
   recalc();
 });
@@ -330,6 +338,13 @@ $("tierSeg").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b) return;
   tier=b.dataset.tier;
   [...$("tierSeg").children].forEach(x=>x.classList.toggle("on",x===b));
+  if(tier==="bulk"){                                            // bump any sub-minimum lines up to the bulk MOQ
+    for(const id in cart){
+      const [si,ii]=id.split("-").map(Number);
+      const m=CATALOG[si].items[ii][5]||1;
+      if(cart[id]>0 && cart[id]<m) cart[id]=m;
+    }
+  }
   render($("search").value); recalc();
 });
 $("feeSeg").addEventListener("click",e=>{
