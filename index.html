@@ -132,47 +132,55 @@
 <script>
 /* ---------- Catalog (parsed from Boris' price sheet) ---------- */
 const CATALOG = [
-  { title:"Battle Brews", icon:"💉", items:[
-    ["Mega Mushroom","100mg/ml","10ml Vial",30,25],
-    ["Vitality Vial","250mg/ml","10ml Vial",40,35],
-    ["Elixir of Oof Prevention","250mg/ml","10ml Vial",40,35],
-    ["Crimson Flask","200mg/ml","10ml Vial",40,35],
-    ["Phoenix Pop","250mg/ml","10ml Vial",40,35],
-    ["Life Shard","300mg/ml","10ml Vial",45,40],
-    ["Max HP Tonic","100mg/ml","10ml Vial",40,35],
-    ["Fairy Juice","250mg/ml","10ml Vial",45,40],
-    ["Stamina Soup","100mg/ml","10ml Vial",45,40],
-    ["Ruby Gourd","200mg/ml","10ml Vial",55,50],
-    ["Healing Ham","100mg/ml","10ml Vial",55,50],
-    ["HP Pickle","200mg/ml","10ml Vial",65,60],
-    ["Revive Ravioli","150mg/ml","10ml Vial",100,95],
-    ["Potion of Bad Decisions","50mg/ml","10ml Vial",85,80],
+  { title:"Injectables", icon:"💉", items:[
+    ["Testosterone Propionate","100mg/ml","10ml Vial",30,25],
+    ["Testosterone Cypionate","250mg/ml","10ml Vial",40,35],
+    ["Testosterone Enanthate","250mg/ml","10ml Vial",40,35],
+    ["Testosterone Udecanote","200mg/ml","10ml Vial",40,35],
+    ["Sustanon","250mg/ml","10ml Vial",40,35],
+    ["Equipoise (EQ)","300mg/ml","10ml Vial",45,40],
+    ["Nandrolone Phenylpropionate (NPP)","100mg/ml","10ml Vial",40,35],
+    ["Nandrolone Deconoate (Deca)","250mg/ml","10ml Vial",45,40],
+    ["Trenbolone Acetate","100mg/ml","10ml Vial",45,40],
+    ["Trenbolone Enanthte","200mg/ml","10ml Vial",55,50],
+    ["Masteron Propionate","100mg/ml","10ml Vial",55,50],
+    ["Masteron Enanthate","200mg/ml","10ml Vial",65,60],
+    ["Primobolan Enanthate","150mg/ml","10ml Vial",100,95],
+    ["Trstolone Acetate (MENT)","50mg/ml","10ml Vial",85,80],
   ]},
-  { title:"Snacks & Potions", icon:"🍖", items:[
-    ["Goblin Gatorade","20mg","50 Tabs",35,30],
-    ["Mana-Free Medkit","50mg","50 Tabs",65,60],
-    ["Extra Life Snack","25mg","50 Tabs",55,50],
-    ["Boss Buster Broth","5mg","50 Tabs",30,25],
-    ["Checkpoint Chow","1mg","50 Tabs",55,50],
-    ["Red Slime Smoothie","12.5mg","50 Tabs",40,35],
-    ["Hero's Lunchbox","20mg","20 Tabs",30,25],
-    ["Golden Apple Juice","50mg","50 Tabs",40,35],
-    ["Knight Nuggets","25mg","50 Tabs",40,35],
-    ["Emergency Cheese","10mg","50 Tabs",100,95],
-    ["Medic Melon","20mg","50 Tabs",35,30],
-    ["Dungeon Donut","25mg","50 Tabs",45,40],
-    ["Critical Cocoa","10mg","50 Tabs",35,30],
-    ["Victory Veggie","10mg","50 Tabs",35,30],
-    ["Heart Container","25mg","20 Tabs",30,25],
-    ["Mega Mushroom (Tabs)","25mg","50 Tabs",45,40],
-    ["Vitality Vial (Tabs)","5mg","50 Tabs",30,25],
+  { title:"Orals", icon:"🍖", items:[
+    ["Accutane","20mg","50 Tabs",35,30],
+    ["Anadrol","50mg","50 Tabs",65,60],
+    ["Anavar","25mg","50 Tabs",55,50],
+    ["Anavar - Ladies","5mg","50 Tabs",30,25],
+    ["Arimidex (Adex)","1mg","50 Tabs",55,50],
+    ["Aromasin","12.5mg","50 Tabs",40,35],
+    ["Cialis","20mg","20 Tabs",30,25],
+    ["Clomid","50mg","50 Tabs",40,35],
+    ["Dianabol (Dbol)","25mg","50 Tabs",40,35],
+    ["Halotestin (Halo)","10mg","50 Tabs",100,95],
+    ["Nolvadex","20mg","50 Tabs",35,30],
+    ["Proviron","25mg","50 Tabs",45,40],
+    ["Superdrol","10mg","50 Tabs",35,30],
+    ["Turinabol (Tbol)","10mg","50 Tabs",35,30],
+    ["Viagra","25mg","20 Tabs",30,25],
+    ["Winstrol","25mg","50 Tabs",45,40],
+    ["Winstrol - Ladies","5mg","50 Tabs",30,25],
+
   ]},
-  { title:"Mystic Reagents", icon:"✨", items:[
-    ["Crimson Flask (Reagent)","N/A","20ml",25,20],
-    ["Phoenix Pop (Reagent)","5,000iu","Each",35,30],
-    // 6th value = bulk minimum order qty. Life Shard bulk is $175/unit, min 10 ($1,750 lot).
-    ["Life Shard (Kit)","100iu/kit","10 x 10iu Vials",200,175,10],
+
+  { title:"Hormones", icon:"✨", items:[
+
+    ["Bacteriostatic Water","N/A","20ml",25,20],
+
+    ["HCG","5,000iu","Each",35,30],
+
+    // 6th value = bulk minimum order qty. HGH bulk is $175/unit, min 10 ($1,750 lot).
+
+    ["HGH - Generic, 99.98% Purity 191-AA","100iu/kit","10 x 10iu Vials",200,175,10],
+
   ]},
+
 ];
 
 const MARKUP = 0.20;
